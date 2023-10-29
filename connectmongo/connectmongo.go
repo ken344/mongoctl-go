@@ -97,6 +97,11 @@ func (m *mongoParams) insertMany(documents []interface{}) (*mongo.InsertManyResu
 	return m.collection.InsertMany(context.Background(), documents)
 }
 
+// 指定のKeyが存在する（あるいは存在しない）ドキュメントを取得する
+func (m *mongoParams) findKeyExists(keyName string, isExists bool) (*mongo.Cursor, error) {
+	return m.collection.Find(context.Background(), bson.D{{Key: keyName, Value: bson.D{{Key: "$exists", Value: isExists}}}})
+}
+
 // SetDotenv .envファイルを読み込む
 func SetDotenv(envPath string) {
 	err := godotenv.Load(envPath)
@@ -117,9 +122,14 @@ func main() {
 	todofukenDb.ConnectClient().ConnectDatabase().ConnectCollection()
 	defer todofukenDb.Disconnect()
 
-	filter := bson.D{{Key: "test-key", Value: bson.D{{Key: "$exists", Value: true}}}}
 	var results []bson.M
-	cursor, err := todofukenDb.findMultiple(filter)
+	var filter interface{}
+	var cursor *mongo.Cursor
+	var err error
+
+	// キーに特定の値が含まれるドキュメントをすべて取得する)
+	filter = bson.D{{"ja", "東京都"}}
+	cursor, err = todofukenDb.findMultiple(filter)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -127,5 +137,19 @@ func main() {
 	if err = cursor.All(context.Background(), &results); err != nil {
 		log.Fatal(err)
 	}
-
+	for _, result := range results {
+		fmt.Println(result)
+	}
+	// キーが存在するドキュメントを取得する($exists)
+	cursor, err = todofukenDb.findKeyExists("en", true)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer cursor.Close(context.Background())
+	if err = cursor.All(context.Background(), &results); err != nil {
+		log.Fatal(err)
+	}
+	for _, result := range results {
+		fmt.Println(result)
+	}
 }

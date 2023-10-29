@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/joho/godotenv"
 	"log"
 	"os"
 	"os/exec"
@@ -91,10 +92,18 @@ func moveFile(src string, dstDir string) error {
 	return err
 }
 
+// SetDotenv .envファイルを読み込む
+func SetDotenv(envPath string) {
+	err := godotenv.Load(envPath)
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+}
+
 func init() {
 	log.SetFlags(log.Lshortfile)
 	// .envファイルを読み込む/
-	SetDotenv(".env")
+	SetDotenv("../.env")
 }
 
 func main() {
