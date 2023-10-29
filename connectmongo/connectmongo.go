@@ -1,9 +1,8 @@
-package main
+package connectmongo
 
 import (
 	"context"
 	"fmt"
-	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -102,21 +101,21 @@ func (m *mongoParams) findKeyExists(keyName string, isExists bool) (*mongo.Curso
 	return m.collection.Find(context.Background(), bson.D{{Key: keyName, Value: bson.D{{Key: "$exists", Value: isExists}}}})
 }
 
-// SetDotenv .envファイルを読み込む
-func SetDotenv(envPath string) {
-	err := godotenv.Load(envPath)
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-}
+//// SetDotenv .envファイルを読み込む
+//func SetDotenv(envPath string) {
+//	err := godotenv.Load(envPath)
+//	if err != nil {
+//		log.Fatal("Error loading .env file")
+//	}
+//}
+//
+//func init() {
+//	log.SetFlags(log.Lshortfile)
+//	// envファイルを読み込む
+//	SetDotenv(".env")
+//}
 
-func init() {
-	log.SetFlags(log.Lshortfile)
-	// envファイルを読み込む
-	SetDotenv(".env")
-}
-
-func main() {
+func example() {
 
 	todofukenDb := newMongoParams(os.Getenv("MONGO_HOST"), os.Getenv("MONGO_USER"), os.Getenv("MONGO_PASSWORD"), os.Getenv("MONGO_DATABASE"), os.Getenv("MONGO_COLLECTION"))
 	todofukenDb.ConnectClient().ConnectDatabase().ConnectCollection()

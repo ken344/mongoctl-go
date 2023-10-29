@@ -1,8 +1,7 @@
-package main
+package importjson
 
 import (
 	"fmt"
-	"github.com/joho/godotenv"
 	"log"
 	"os"
 	"os/exec"
@@ -92,21 +91,21 @@ func moveFile(src string, dstDir string) error {
 	return err
 }
 
-// SetDotenv .envファイルを読み込む
-func SetDotenv(envPath string) {
-	err := godotenv.Load(envPath)
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-}
+//// SetDotenv .envファイルを読み込む
+//func SetDotenv(envPath string) {
+//	err := godotenv.Load(envPath)
+//	if err != nil {
+//		log.Fatal("Error loading .env file")
+//	}
+//}
+//
+//func init() {
+//	log.SetFlags(log.Lshortfile)
+//	// .envファイルを読み込む/
+//	SetDotenv(".env")
+//}
 
-func init() {
-	log.SetFlags(log.Lshortfile)
-	// .envファイルを読み込む/
-	SetDotenv("../.env")
-}
-
-func main() {
+func example() {
 
 	//import用の構造体を作成する
 	mongoImport := newMongoImportParams(os.Getenv("MONGO_HOST"), os.Getenv("MONGO_USER"), os.Getenv("MONGO_PASSWORD"), os.Getenv("MONGO_DATABASE"), os.Getenv("MONGO_COLLECTION"))
