@@ -10,8 +10,8 @@ import (
 	"os"
 )
 
-// mongoDbへの接続情報構造体
-type mongoParams struct {
+// MongoParams mongoDbへの接続情報構造体
+type MongoParams struct {
 	host           string
 	user           string
 	password       string
@@ -23,7 +23,7 @@ type mongoParams struct {
 }
 
 // ConnectClient mongodbとのclientを作成する
-func (m *mongoParams) ConnectClient() *mongoParams {
+func (m *MongoParams) ConnectClient() *MongoParams {
 	uri := fmt.Sprintf("mongodb://%s", m.host)
 	// DB接続用のクレデンシャル情報を定義
 	credential := options.Credential{
@@ -45,7 +45,7 @@ func (m *mongoParams) ConnectClient() *mongoParams {
 }
 
 // ConnectDatabase mongodbのdatabaseとの接続
-func (m *mongoParams) ConnectDatabase() *mongoParams {
+func (m *MongoParams) ConnectDatabase() *MongoParams {
 	// databaseを接続。
 	m.database = m.client.Database(m.databaseName)
 	//collectionを初期化（別のdbへ接続した場合を考慮し、collectionを初期化する）
@@ -54,15 +54,15 @@ func (m *mongoParams) ConnectDatabase() *mongoParams {
 }
 
 // ConnectCollection mongodbのcollectionとの接続
-func (m *mongoParams) ConnectCollection() *mongoParams {
+func (m *MongoParams) ConnectCollection() *MongoParams {
 	// collectionを接続。
 	m.collection = m.database.Collection(m.collectionName)
 	return m
 }
 
-// mongodbのパラメータを初期化する（新規構造体の作成）
-func newMongoParams(host string, user string, password string, databaseName string, collectionName string) *mongoParams {
-	mg := new(mongoParams)
+// NewMongoParams mongodbのパラメータを初期化する（新規構造体の作成）
+func NewMongoParams(host string, user string, password string, databaseName string, collectionName string) *MongoParams {
+	mg := new(MongoParams)
 	mg.host = host
 	mg.user = user
 	mg.password = password
@@ -72,32 +72,32 @@ func newMongoParams(host string, user string, password string, databaseName stri
 }
 
 // Disconnect mongodbとの接続を切断する
-func (m *mongoParams) Disconnect() {
+func (m *MongoParams) Disconnect() {
 	err := m.client.Disconnect(context.Background())
 	if err != nil {
 		return
 	}
 }
 
-// mongodbの操作
-func (m *mongoParams) findOne(filter interface{}) *mongo.SingleResult {
+// FindOne mongodbの操作
+func (m *MongoParams) FindOne(filter interface{}) *mongo.SingleResult {
 	return m.collection.FindOne(context.Background(), filter)
 }
 
-func (m *mongoParams) findMultiple(filter interface{}) (*mongo.Cursor, error) {
+func (m *MongoParams) FindMultiple(filter interface{}) (*mongo.Cursor, error) {
 	return m.collection.Find(context.Background(), filter)
 }
 
-func (m *mongoParams) insertOne(document interface{}) (*mongo.InsertOneResult, error) {
+func (m *MongoParams) InsertOne(document interface{}) (*mongo.InsertOneResult, error) {
 	return m.collection.InsertOne(context.Background(), document)
 }
 
-func (m *mongoParams) insertMany(documents []interface{}) (*mongo.InsertManyResult, error) {
+func (m *MongoParams) InsertMany(documents []interface{}) (*mongo.InsertManyResult, error) {
 	return m.collection.InsertMany(context.Background(), documents)
 }
 
-// 指定のKeyが存在する（あるいは存在しない）ドキュメントを取得する
-func (m *mongoParams) findKeyExists(keyName string, isExists bool) (*mongo.Cursor, error) {
+// FindKeyExists 指定のKeyが存在する（あるいは存在しない）ドキュメントを取得する
+func (m *MongoParams) FindKeyExists(keyName string, isExists bool) (*mongo.Cursor, error) {
 	return m.collection.Find(context.Background(), bson.D{{Key: keyName, Value: bson.D{{Key: "$exists", Value: isExists}}}})
 }
 
@@ -117,7 +117,7 @@ func (m *mongoParams) findKeyExists(keyName string, isExists bool) (*mongo.Curso
 
 func example() {
 
-	todofukenDb := newMongoParams(os.Getenv("MONGO_HOST"), os.Getenv("MONGO_USER"), os.Getenv("MONGO_PASSWORD"), os.Getenv("MONGO_DATABASE"), os.Getenv("MONGO_COLLECTION"))
+	todofukenDb := NewMongoParams(os.Getenv("MONGO_HOST"), os.Getenv("MONGO_USER"), os.Getenv("MONGO_PASSWORD"), os.Getenv("MONGO_DATABASE"), os.Getenv("MONGO_COLLECTION"))
 	todofukenDb.ConnectClient().ConnectDatabase().ConnectCollection()
 	defer todofukenDb.Disconnect()
 
@@ -128,11 +128,17 @@ func example() {
 
 	// キーに特定の値が含まれるドキュメントをすべて取得する)
 	filter = bson.D{{"ja", "東京都"}}
-	cursor, err = todofukenDb.findMultiple(filter)
+	cursor, err = todofukenDb.FindMultiple(filter)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer cursor.Close(context.Background())
+	defer func(cursor *mongo.Cursor, ctx context.Context) {
+		err := cursor.Close(ctx)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(cursor, context.Background())
+
 	if err = cursor.All(context.Background(), &results); err != nil {
 		log.Fatal(err)
 	}
@@ -140,11 +146,17 @@ func example() {
 		fmt.Println(result)
 	}
 	// キーが存在するドキュメントを取得する($exists)
-	cursor, err = todofukenDb.findKeyExists("en", true)
+	cursor, err = todofukenDb.FindKeyExists("en", true)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer cursor.Close(context.Background())
+	defer func(cursor *mongo.Cursor, ctx context.Context) {
+		err := cursor.Close(ctx)
+		if err != nil {
+
+		}
+	}(cursor, context.Background())
+
 	if err = cursor.All(context.Background(), &results); err != nil {
 		log.Fatal(err)
 	}

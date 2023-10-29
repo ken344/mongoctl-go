@@ -9,8 +9,8 @@ import (
 	"strings"
 )
 
-// mongoDbへの接続情報構造体
-type mongoImportParams struct {
+// MongoImportParams mongoDbへの接続情報構造体
+type MongoImportParams struct {
 	host           string
 	user           string
 	password       string
@@ -18,9 +18,9 @@ type mongoImportParams struct {
 	collectionName string
 }
 
-// mongodbのパラメータを初期化する（新規構造体の作成）
-func newMongoImportParams(host string, user string, password string, databaseName string, collectionName string) *mongoImportParams {
-	mi := new(mongoImportParams)
+// NewMongoImportParams mongodbのパラメータを初期化する（新規構造体の作成）
+func NewMongoImportParams(host string, user string, password string, databaseName string, collectionName string) *MongoImportParams {
+	mi := new(MongoImportParams)
 	mi.host = host
 	mi.user = user
 	mi.password = password
@@ -29,8 +29,8 @@ func newMongoImportParams(host string, user string, password string, databaseNam
 	return mi
 }
 
-// jsonファイルをmongoDBにインポートする
-func (mi mongoImportParams) importJson(filePath string) bool {
+// ImportJson jsonファイルをmongoDBにインポートする
+func (mi MongoImportParams) ImportJson(filePath string) bool {
 	// mongoimportを使用するためには、mongodb-database-toolsをインストールする必要がある。
 	//https://www.mongodb.com/docs/database-tools/installation/installation-macos/
 	cmd := exec.Command("mongoimport", "-h", mi.host, "-u", mi.user, "-p", mi.password, "--db", mi.databaseName, "--collection", mi.collectionName, "--file", filePath, "--jsonArray")
@@ -41,8 +41,8 @@ func (mi mongoImportParams) importJson(filePath string) bool {
 	return true
 }
 
-// ファイルのパスを取得して配列にする。
-func getFilePaths(dirPath string, extensionName string) []string {
+// GetFilePaths ファイルのパスを取得して配列にする。
+func GetFilePaths(dirPath string, extensionName string) []string {
 	// ファイルのパスを格納する配列
 	var filePaths []string
 
@@ -108,16 +108,16 @@ func moveFile(src string, dstDir string) error {
 func example() {
 
 	//import用の構造体を作成する
-	mongoImport := newMongoImportParams(os.Getenv("MONGO_HOST"), os.Getenv("MONGO_USER"), os.Getenv("MONGO_PASSWORD"), os.Getenv("MONGO_DATABASE"), os.Getenv("MONGO_COLLECTION"))
+	mongoImport := NewMongoImportParams(os.Getenv("MONGO_HOST"), os.Getenv("MONGO_USER"), os.Getenv("MONGO_PASSWORD"), os.Getenv("MONGO_DATABASE"), os.Getenv("MONGO_COLLECTION"))
 
 	// 指定したディレクトリ内に存在するファイルから、指定した拡張子のファイルのパスを配列に格納する
 	targetDirPath := "./input_data"
 	choiceExtensionName := "json"
-	jsonFilePath := getFilePaths(targetDirPath, choiceExtensionName)
+	jsonFilePath := GetFilePaths(targetDirPath, choiceExtensionName)
 
 	// jsonファイルをmongoDBにインポートする
 	for _, filePath := range jsonFilePath {
-		if mongoImport.importJson(filePath) {
+		if mongoImport.ImportJson(filePath) {
 			fmt.Println("import success")
 			// インポートしたファイルを別のディレクトリに移動する
 			err := moveFile(filePath, "./input_data/completed_data")
