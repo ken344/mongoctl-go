@@ -72,7 +72,7 @@ func GetFilePaths(dirPath string, extensionName string) []string {
 	return filePaths
 }
 
-func moveFile(src string, dstDir string) error {
+func MoveFile(src string, dstDir string) error {
 	// ファイル名を取得する
 	_, fileName := filepath.Split(src)
 
@@ -120,7 +120,7 @@ func example() {
 		if mongoImport.ImportJson(filePath) {
 			fmt.Println("import success")
 			// インポートしたファイルを別のディレクトリに移動する
-			err := moveFile(filePath, "./input_data/completed_data")
+			err := MoveFile(filePath, "./input_data/completed_data")
 			if err != nil {
 				return
 			}
