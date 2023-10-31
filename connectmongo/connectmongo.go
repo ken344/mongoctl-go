@@ -101,6 +101,14 @@ func (m *MongoParams) FindKeyExists(keyName string, isExists bool) (*mongo.Curso
 	return m.collection.Find(context.Background(), bson.D{{Key: keyName, Value: bson.D{{Key: "$exists", Value: isExists}}}})
 }
 
+func (m *MongoParams) DeleteOne(filter interface{}) (*mongo.DeleteResult, error) {
+	return m.collection.DeleteOne(context.Background(), filter)
+}
+
+func (m *MongoParams) DeleteMany(filter interface{}) (*mongo.DeleteResult, error) {
+	return m.collection.DeleteMany(context.Background(), filter)
+}
+
 //// SetDotenv .envファイルを読み込む
 //func SetDotenv(envPath string) {
 //	err := godotenv.Load(envPath)
