@@ -79,19 +79,29 @@ func (m *MongoParams) Disconnect() {
 	}
 }
 
-// FindOne mongodbの操作
+// FindOne dbから1つのドキュメントを取得する
+// filter := bson.D{{"_id", id}}
 func (m *MongoParams) FindOne(filter interface{}) *mongo.SingleResult {
 	return m.collection.FindOne(context.Background(), filter)
 }
 
+// FindMultiple dbから複数のドキュメントを取得する
+// filter := bson.D{{"name", "bob"}}
 func (m *MongoParams) FindMultiple(filter interface{}) (*mongo.Cursor, error) {
 	return m.collection.Find(context.Background(), filter)
 }
 
+// InsertOne dbに1つのドキュメントを挿入する
+// document := bson.D{{"name", "pi"}, {"value", 3.14159}}
 func (m *MongoParams) InsertOne(document interface{}) (*mongo.InsertOneResult, error) {
 	return m.collection.InsertOne(context.Background(), document)
 }
 
+// InsertMany dbに複数のドキュメントを挿入する
+// documents := []interface{}{
+// bson.D{{"name", "Alice"}},
+// bson.D{{"name", "Bob"}},
+// }
 func (m *MongoParams) InsertMany(documents []interface{}) (*mongo.InsertManyResult, error) {
 	return m.collection.InsertMany(context.Background(), documents)
 }
@@ -101,12 +111,64 @@ func (m *MongoParams) FindKeyExists(keyName string, isExists bool) (*mongo.Curso
 	return m.collection.Find(context.Background(), bson.D{{Key: keyName, Value: bson.D{{Key: "$exists", Value: isExists}}}})
 }
 
+// DeleteOne 指定のドキュメントを削除する
+// filter := bson.D{{"name", "bob"}}
 func (m *MongoParams) DeleteOne(filter interface{}) (*mongo.DeleteResult, error) {
 	return m.collection.DeleteOne(context.Background(), filter)
 }
 
+// DeleteMany 指定のドキュメントを削除する
+// filter := bson.D{{"name", "bob"}}
 func (m *MongoParams) DeleteMany(filter interface{}) (*mongo.DeleteResult, error) {
 	return m.collection.DeleteMany(context.Background(), filter)
+}
+
+// UpdateOne 指定のドキュメントを更新する
+// filter := bson.D{{"_id", id}}
+// update := bson.D{{"$set", bson.D{{"email", "newemail@example.com"}}}}
+func (m *MongoParams) UpdateOne(filter interface{}, update interface{}) (*mongo.UpdateResult, error) {
+	return m.collection.UpdateOne(context.Background(), filter, update)
+}
+
+// UpdateMany 指定のドキュメントを更新する
+// filter := bson.D{{"birthday", today}}
+// update := bson.D{{"$inc", bson.D{{"age", 1}}}}
+func (m *MongoParams) UpdateMany(filter interface{}, update interface{}) (*mongo.UpdateResult, error) {
+	return m.collection.UpdateMany(context.Background(), filter, update)
+}
+
+// UpdateByID 指定したIDのドキュメントを更新する
+func (m *MongoParams) UpdateByID(id interface{}, update interface{}) (*mongo.UpdateResult, error) {
+	return m.collection.UpdateByID(context.Background(), id, update)
+}
+
+// ReplaceOne 指定のドキュメントを置き換える
+// filter := bson.D{{"_id", id}}
+// replacement := bson.D{{"location", "NYC"}}
+func (m *MongoParams) ReplaceOne(filter interface{}, replacement interface{}) (*mongo.UpdateResult, error) {
+	return m.collection.ReplaceOne(context.Background(), filter, replacement)
+}
+
+// FindOneAndDelete 指定のドキュメントを削除する
+// filter := bson.D{{"_id", id}}
+func (m *MongoParams) FindOneAndDelete(filter interface{}) *mongo.SingleResult {
+	return m.collection.FindOneAndDelete(context.Background(), filter)
+}
+
+// FindOneAndReplace 指定のドキュメントを置き換える
+// filter := bson.D{{"_id", id}}
+// replacement := bson.D{{"location", "NYC"}}
+// var replacedDocument bson.M
+func (m *MongoParams) FindOneAndReplace(filter interface{}, replacement interface{}) *mongo.SingleResult {
+	return m.collection.FindOneAndReplace(context.Background(), filter, replacement)
+}
+
+// FindOneAndUpdate 指定のドキュメントを更新する
+// filter := bson.D{{"_id", id}}
+// update := bson.D{{"$set", bson.D{{"email", "newemail@example.com"}}}}
+// var updatedDocument bson.M
+func (m *MongoParams) FindOneAndUpdate(filter interface{}, update interface{}) *mongo.SingleResult {
+	return m.collection.FindOneAndUpdate(context.Background(), filter, update)
 }
 
 //// SetDotenv .envファイルを読み込む
